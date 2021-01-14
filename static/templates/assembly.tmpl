@@ -1,0 +1,108 @@
+{{template "header" .HeaderData}}
+{{template "menuBar" .UserMode}}
+<h1>Assembly</h1>
+
+
+
+{{if ge .UserMode 2}}
+
+
+
+<form action="/assembly" method="post" enctype="multipart/form-data">
+<span class="thumbnailEnlarger"><img width=128 src="{{.Assembly.Image}}"><span><img src="{{.Assembly.Image}}"></span></span>
+<p>Internal ID: <span class="code">{{.Assembly.ID}}</span></p>
+<p>Name: <input type="text" value="{{.Assembly.Name}}" name="name"></p>
+<p>Bracket Style: 
+    <select name="bracketstyle">
+        <option value="Floor Stand"{{if eq .Assembly.BracketStyle "Floor Stand"}} selected{{end}}>Floor Stand</option>
+        <option value="Single Box Adjustable{{if eq .Assembly.BracketStyle "Single Box Adjustable"}} selected{{end}}">Single Box Adjustable</option>
+        <option value="Multi Box Adjustable{{if eq .Assembly.BracketStyle "Multi Box Adjustable"}} selected{{end}}">Multi Box Adjustable</option>
+        <option value="Single Box Nearest Stud{{if eq .Assembly.BracketStyle "Single Box Nearest Stud"}} selected{{end}}">Single Box Nearest Stud</option>
+    </select>
+</p>
+<p>Raceway Style:
+    <select name="racewaystyle">
+        <option value="Conduit"{{if eq .Assembly.RacewayStyle "Conduit"}} selected{{end}}>Conduit</option>
+        <option value="MC Cable"{{if eq .Assembly.RacewayStyle "MC Cable"}} selected{{end}}>MC Cable</option>
+        <option value="Both"{{if eq .Assembly.RacewayStyle "Both"}} selected{{end}}>Both</option>
+    </select>
+</p>
+<p>System: 
+    <select name="system">
+        <option value="Generic"{{if eq .Assembly.System "Generic"}} selected{{end}}>Generic</option>
+        <option value="Lighting Control"{{if eq .Assembly.System "Lighting Control"}} selected{{end}}>Lighting Control</option>
+        <option value="Fire Alarm"{{if eq .Assembly.System "Fire Alarm"}} selected{{end}}>Fire Alarm</option>
+        <option value="Power"{{if eq .Assembly.System "Power"}} selected{{end}}>Power</option>
+    </select>
+</p>
+<p>Has device: 
+    <select name="device">
+        <option value="true"{{if eq .Assembly.Device true}} selected{{end}}>Yes</option>
+        <option value="false"{{if eq .Assembly.Device false}} selected{{end}}>No</option>
+    </select>
+</p>
+<p>Description: <textarea name="description">{{.Assembly.Description}}</textarea></p>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/datatables.min.js"></script>
+<script src="/js/initiateTable.js"></script>
+<script src="/js/prefab-catalog.js"></script>
+<p>Parts: <button type="button" onclick="toggleHide()">(Show / hide parts list)</button>
+<div id="hide">
+<table id="dataTable" class="display compact cell-border">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Image</th>
+            <th>Number</th>
+            <th>Manufacturer</th>
+            <th>Cost</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $Part, $Quantity := .PartsAndQuantities}}
+        <tr>
+            <td><a href="/part/{{$Part.ID}}">{{$Part.Name}}</a></td>
+            <td><span class="thumbnailEnlarger"><img src="{{$Part.Image}}" style="max-width: 32px; max-height: 32px;"><span><img src="{{$Part.Image}}"></span></span></td>
+            <td>{{$Part.Number}}</td>
+            <td>{{$Part.Manufacturer}}</td>
+            <td>{{$Part.CostPerUnit}}</td>
+            <td>{{$Part.Description}}</td>
+            <td>{{$Part.Unit}}</td>
+            <td><input type="number" placeholder="0" name="{{$Part.ID}}" value="{{$Quantity}}"></td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+</div>
+</p>
+<p>Estimated time to build in minutes: <input type="number" value="{{.Assembly.Minutes}}" name="minutes"></p>
+<p>Image: <input type="file" name="image"></p>
+<button type="submit" name="submit" value="save">Save</button>
+{{if .CanDelete}}<button type="submit" name="submit" class="warning" value="delete">Delete this assembly</button>{{end}}
+
+
+
+{{else}}
+
+
+
+<span class="thumbnailEnlarger"><img width=128 src="{{.Assembly.Image}}"><span><img src="{{.Assembly.Image}}"></span></span>
+<p>Name: {{.Assembly.Name}}</p>
+<p>Bracket Style: {{.Assembly.BracketStyle}}</p>
+<p>Raceway Style: {{.Assembly.BracketStyle}}</p>
+<p>System: {{.Assembly.System}}</p>
+<p>Has device: {{if eq .Assembly.Device true}}Yes{{else}}No{{end}}</p>
+<p>Parts:
+<table>
+    {{range $id, $quantity := .Assembly.Items}}
+    <tr><td>{{$quantity}} × <a href="/part/{{$id}}">{{$id | PartGetName}}</a></td></tr>
+    {{end}}
+</table>
+</p>
+<p>Description: <pre>{{.Assembly.Description}}</pre></p>
+{{end}}
+{{if .Message}}<p class="warning">{{.Message}}</p>{{end}}
+{{template "footer"}}

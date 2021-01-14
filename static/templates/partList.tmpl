@@ -1,0 +1,38 @@
+{{template "header" .HeaderData}}
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+<h1>Prefab Catalog: Parts</h1>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/datatables.min.js"></script>
+<script src="/js/initiateTable.js"></script>
+<table id="dataTable" class="display compact cell-border">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Manufacturer</th>
+            <th>Cost</th>
+            <th>Description</th>
+            <th>Unit</th>
+            {{/* Individual Part Ordering TODO {{if ge .UserMode 1}}<th>Quantity To Order?</th>{{end}} */}}
+        </tr>
+        <br>
+    </thead>
+    <tbody>
+    {{range .Parts}}
+        <tr>
+            <td><span class="thumbnailEnlarger"><img src="{{.Image}}" style="max-width: 32px; max-height: 32px;"><span><img src="{{.Image}}"></span></span></td>
+            <td><a href="/part/{{.ID}}">{{.Name}}</a></td>
+            <td>{{.Number}}</td>
+            <td>{{.Manufacturer}}</td>
+            <td>{{.CostPerUnit}}</td>
+            <td>{{.Description}}</td>
+            <td>{{.Unit}}</td>
+            {{/* Individual Part Ordering TODO {{if ge $.UserMode 1}}<td><input type="number" placeholder="0" name="{{.ID}}"></td>{{end}} */}}
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+{{template "footer"}}

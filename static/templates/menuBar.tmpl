@@ -1,0 +1,6 @@
+{{define "menuBar"}}
+<div class="menuBar">
+    <p style="float: left;"><a href="/assembly" style="font-weight: bold;">Assemblies</a> | <a href="/part">Parts</a> | {{if ge . 2}}<a href="/admin">Admin Tools</a> | {{end}}<a href="/profile">View Profile</a> | <a href="/logout">Log Out</a></p>
+    {{if ge . 1}}<p style="float: right; font-weight: bold;"><a href="/order">Review Order</a></p>{{end}}
+</div>
+{{end}}

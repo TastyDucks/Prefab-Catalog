@@ -1,0 +1,39 @@
+body {
+    background-color: #eceff1;
+    font-family: sans-serif;
+    margin: auto;
+    background-image: url("/media/Anaheim_Office.webp");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+    max-width: 100%;
+}
+
+h1 {
+    margin: 10px 0px 10px 0px;
+    font-family: sans-serif;
+}
+
+input {
+    position: relative;
+    width: auto;
+    display: block;
+    margin: 5px auto;
+}
+
+.login {
+    background-image: url("/media/blur.webp");
+    padding: 15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+}
+
+.warning {
+    text-align: center;
+}

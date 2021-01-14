@@ -1,0 +1,26 @@
+{{template "header" .HeaderData}}
+{{template "menuBar" .UserMode}}
+<h1>User List</h1>
+<table id="catalog">
+    <tr>
+        <th>Image</th>
+        <th>ID</th>
+        <th>Mode</th>
+        <th>Username</th>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Contact</th>
+    </tr>
+    {{range .List}}
+    <tr>
+        <td><span class="thumbnailEnlarger"><img src="{{.Image}}" style="max-width: 32px; max-height: 32px;"><span><img src="{{.Image}}"></span></span></td>
+        <td><a href="/profile/{{.ID}}"><span class="code">{{.ID}}</span></a></td>
+        <td>{{.Mode}}</td>
+        <td>{{.Username}}</td>
+        <td>{{.FirstName}}</td>
+        <td>{{.LastName}}</td>
+        <td>{{.Contact}}</td>
+    </tr>
+    {{end}}
+</table>
+{{template "footer"}}

@@ -1,0 +1,45 @@
+{{template "header" .HeaderData}}
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+<h1>Prefab Catalog: Standard Assemblies</h1>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/datatables.min.js"></script>
+<script src="/js/initiateTableFilterable.js"></script>
+<table id="dataTable" class="display compact cell-border">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Bracket Style</th>
+            <th>Raceway Style</th>
+            <th>System</th>
+            <th>Device</th>
+            <th>Description</th>
+            <th>Parts</th>
+            {{if ge .UserMode 1}}<th>Quantity To Order?</th>{{end}}
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Assemblies}}
+        <tr>
+            <td><span class="thumbnailEnlarger"><img width=128 src="{{.Image}}"><span><img src="{{.Image}}"></span></span></td>
+            <td><a href="/assembly/{{.ID}}">{{.Name}}</a></td>
+            <td>{{.BracketStyle}}</td>
+            <td>{{.RacewayStyle}}</td>
+            <td>{{.System}}</td>
+            <td>{{.Device}}</td>
+            <td><pre>{{.Description}}</pre></td>
+            <td>
+                <table id="parts">
+                    {{range $id, $quantity := .Items}}
+                    <tr><td>{{$quantity}} × <a href="/part/{{$id}}">{{$id | PartGetName}}</a></td></tr>
+                    {{end}}
+                </table>
+            </td>
+            {{if ge $.UserMode 1}}<td><input type="number" placeholder="0" name="{{.ID}}"></td>{{end}}
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+{{template "footer"}}

@@ -1,0 +1,24 @@
+{{template "header" .HeaderData}}
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+<h1>Audit Log</h1>
+<table id="catalog">
+    <tr>
+        <th>Time</th>
+        <th>User</th>
+        <th>Action</th>
+        <th>Kind</th>
+        <th>Target</th>
+    </tr>
+    {{range .List}}
+    <tr>
+        <td>{{.Time}}</td>
+        <td><a href="/profile/{{.User}}"><span class="code">{{.User}}</span></a></td>
+        <td>{{.Action}}</td>
+        <td>{{.Kind}}</td>
+        <td><a href="{{.Kind}}/{{.Target}}"><span class="code">{{.Target}}</span></a></td>
+    </tr>
+    {{end}}
+</table>
+{{template "footer"}}

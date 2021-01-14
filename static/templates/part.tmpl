@@ -1,0 +1,29 @@
+{{template "header" .HeaderData}}
+{{template "menuBar" .UserMode}}
+<script src="/js/jquery.min.js"></script>
+<script src="/js/prefab-catalog.js"></script>
+<h1>Part</h1>
+<span class="thumbnailEnlarger"><img width=128 src="{{.Part.Image}}"><span><img src="{{.Part.Image}}"></span></span>
+{{if ge .UserMode 2}}
+<form action="/part" method="post" enctype="multipart/form-data">
+<p>Internal ID: <span class="code">{{.Part.ID}}</span></p>
+<p>Name: <input type="text" name="name" value="{{.Part.Name}}"></p>
+<p>Part number: <input type="text" name="number" value="{{.Part.Number}}"></p>
+<p>Manufacturer: <input type="text" name="manufacturer" value="{{.Part.Manufacturer}}"></p>
+<p>Description: <textarea name="description">{{.Part.Description}}</textarea></p>
+<p>Unit of measure: <select name="unit"><option value="quantity" selected>Quantity</option><option value="length">Length (in feet)</option></select></p>
+<p>Cost per unit: (in cents)<input type="number" name="costPerUnit" value="{{.Part.CostPerUnit}}"></p>
+<p>Image: <input type="file" name="image"></p>
+<button type="submit" name="submit" value="save">Save</button>
+{{if .CanDelete}}<button type="submit" name="submit" class="warning" value="delete">Delete this part</button>{{end}}
+</form>
+{{else}}
+<p>Name: {{.Part.Name}}</p>
+<p>Part number: {{.Part.Number}}</p>
+<p>Manufacturer: {{.Part.Manufacturer}}</p>
+<p>Description: {{.Part.Description}}</p>
+<p>Unit of measure: {{.Part.Unit}}</p>
+<p>Cost per unit (in cents): {{.Part.CostPerUnit}}</p>
+{{end}}
+{{if .Message}}<p class="warning">{{.Message}}</p>{{end}}
+{{template "footer"}}

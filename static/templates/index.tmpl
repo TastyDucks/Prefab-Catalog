@@ -1,0 +1,11 @@
+{{template "header" .HeaderData}}
+<div class="login">
+<form action="/" method="post">
+<input type="text" placeholder="Username", name="username">
+<input type="password" placeholder="Password", name="password">
+<input style="float: center;" type="submit" value="Login">
+</form>
+{{if not .LoggedIn}}<p class="warning">The username or password you have entered was incorrect. Please try again.</p>{{end}}
+</div>
+<p style="position: absolute; bottom: 0;" class="code">Build {{.Build}}</p>
+{{template "footer"}}

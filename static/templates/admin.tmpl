@@ -1,0 +1,23 @@
+{{template "header" .HeaderData}}
+{{template "menuBar" .UserMode}}
+<h1>Admin Tools</h1>
+<h2>Metrics</h2>
+<ul>
+    <li style="font-weight: bold;"><a href="stats">Order Statistics</a></li>
+    <li><a href="adminAuditLog">Audit Log</a></li>
+</ul>
+<h2>Users</h2>
+<ul>
+    <li><a href="profile/new">Create New User</a></li>
+    <li><a href="adminUserList">Modify Existing User</a></li>
+</ul>
+<h2>Catalog</h2>
+<ul>
+    <li><a href="part/new">New Part</a></li>
+    <li><a href="assembly/new">New Assembly</a></li>
+</ul>
+<h2>SysAdmin</h2>
+<ul>
+    <li><a href="http://dev.prefab.pkre.co">Dynamic Assembly System - Prefab-Catalog v 2.0</a></li>
+</ul>
+{{template "footer"}}
