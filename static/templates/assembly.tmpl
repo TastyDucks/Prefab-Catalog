@@ -8,23 +8,23 @@
 
 
 
-<form action="/assembly" method="post" enctype="multipart/form-data">
-<span class="thumbnailEnlarger"><img width=128 src="{{.Assembly.Image}}"><span><img src="{{.Assembly.Image}}"></span></span>
+<p><span class="thumbnailEnlarger"><img width=128 src="{{.Assembly.Image}}"><span><img src="{{.Assembly.Image}}"></span></span></p>
+<form id="submit" action="/assembly" method="post" enctype="multipart/form-data">
 <p>Internal ID: <span class="code">{{.Assembly.ID}}</span></p>
 <p>Name: <input type="text" value="{{.Assembly.Name}}" name="name"></p>
 <p>Bracket Style: 
     <select name="bracketstyle">
         <option value="Floor Stand"{{if eq .Assembly.BracketStyle "Floor Stand"}} selected{{end}}>Floor Stand</option>
-        <option value="Single Box Adjustable{{if eq .Assembly.BracketStyle "Single Box Adjustable"}} selected{{end}}">Single Box Adjustable</option>
-        <option value="Multi Box Adjustable{{if eq .Assembly.BracketStyle "Multi Box Adjustable"}} selected{{end}}">Multi Box Adjustable</option>
-        <option value="Single Box Nearest Stud{{if eq .Assembly.BracketStyle "Single Box Nearest Stud"}} selected{{end}}">Single Box Nearest Stud</option>
+        <option value="Single Box Adjustable"{{if eq .Assembly.BracketStyle "Single Box Adjustable"}} selected{{end}}>Single Box Adjustable</option>
+        <option value="Multi Box Adjustable"{{if eq .Assembly.BracketStyle "Multi Box Adjustable"}} selected{{end}}>Multi Box Adjustable</option>
+        <option value="Single Box Nearest Stud"{{if eq .Assembly.BracketStyle "Single Box Nearest Stud"}} selected{{end}}>Single Box Nearest Stud</option>
     </select>
 </p>
 <p>Raceway Style:
     <select name="racewaystyle">
         <option value="Conduit"{{if eq .Assembly.RacewayStyle "Conduit"}} selected{{end}}>Conduit</option>
         <option value="MC Cable"{{if eq .Assembly.RacewayStyle "MC Cable"}} selected{{end}}>MC Cable</option>
-        <option value="Both"{{if eq .Assembly.RacewayStyle "Both"}} selected{{end}}>Both</option>
+        <option value="Conduit and/or MC Cable"{{if eq .Assembly.RacewayStyle "Conduit and/or MC Cable"}} selected{{end}}>Conduit and/or MC Cable</option>
     </select>
 </p>
 <p>System: 
@@ -71,7 +71,7 @@
             <td>{{$Part.CostPerUnit}}</td>
             <td>{{$Part.Description}}</td>
             <td>{{$Part.Unit}}</td>
-            <td><input type="number" placeholder="0" name="{{$Part.ID}}" value="{{$Quantity}}"></td>
+            <td><input type="number" placeholder="0" name="{{$Part.ID}}" value="{{if gt $Quantity 0}}{{$Quantity}}{{end}}"></td>
         </tr>
         {{end}}
     </tbody>
@@ -82,7 +82,7 @@
 <p>Image: <input type="file" name="image"></p>
 <button type="submit" name="submit" value="save">Save</button>
 {{if .CanDelete}}<button type="submit" name="submit" class="warning" value="delete">Delete this assembly</button>{{end}}
-
+</form>
 
 
 {{else}}
@@ -92,7 +92,7 @@
 <span class="thumbnailEnlarger"><img width=128 src="{{.Assembly.Image}}"><span><img src="{{.Assembly.Image}}"></span></span>
 <p>Name: {{.Assembly.Name}}</p>
 <p>Bracket Style: {{.Assembly.BracketStyle}}</p>
-<p>Raceway Style: {{.Assembly.BracketStyle}}</p>
+<p>Raceway Style: {{.Assembly.RacewayStyle}}</p>
 <p>System: {{.Assembly.System}}</p>
 <p>Has device: {{if eq .Assembly.Device true}}Yes{{else}}No{{end}}</p>
 <p>Parts:

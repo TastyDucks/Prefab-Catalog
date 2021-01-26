@@ -27,7 +27,7 @@ type catalogData struct {
 /*
 Catalog displays the catalog.
 */
-func Catalog(c *gin.Context) {
+func Catalog(c *gin.Context) { // TODO: Delete this!
 	if !auth.UserCanAccess(c, 0) {
 		Forbidden(c)
 		return
@@ -43,7 +43,7 @@ All the data that may be passed to the assembly page.
 type assemblyData struct {
 	HeaderData         *web.HeaderData
 	UserMode           int
-	Assembly           *db.Assembly
+	Assembly           db.Assembly
 	PartsAndQuantities map[db.Part]int
 	CanDelete          bool
 	Message            string
@@ -69,7 +69,7 @@ func Assembly(c *gin.Context) {
 		return
 	}
 	user := db.UserGet(auth.GetLogin(c))
-	var assembly *db.Assembly
+	var assembly db.Assembly
 	canDelete := true
 	ID := c.Param("id")[1:] // We need to delete the leading "/".
 	if ID != "" {
@@ -79,7 +79,7 @@ func Assembly(c *gin.Context) {
 				return
 			}
 			canDelete = false
-			assembly = &db.Assembly{ID: db.UUID(), Name: "", Description: "", BracketStyle: "", RacewayStyle: "", System: "", Device: false, Minutes: 0, Items: nil, Image: ""}
+			assembly = db.Assembly{ID: db.UUID(), Name: "", Description: "", BracketStyle: "", RacewayStyle: "", System: "", Device: false, Minutes: 0, Items: nil, Image: "/media/none.webp"}
 		} else {
 			assembly = db.AssemblyGet(ID)
 			if assembly.ID == "" {
@@ -87,7 +87,7 @@ func Assembly(c *gin.Context) {
 				return
 			}
 		}
-		parts := db.PartGetAll()
+		parts := db.PartGetAll(false)
 		partsAndQuantities := make(map[db.Part]int)
 		for _, part := range parts {
 			partsAndQuantities[part] = 0 // Assign a default quantity of zero.
@@ -101,7 +101,7 @@ func Assembly(c *gin.Context) {
 		c.HTML(http.StatusOK, "assembly.tmpl", &assemblyData{HeaderData: assemblyHeader, UserMode: user.Mode, Assembly: assembly, PartsAndQuantities: partsAndQuantities, CanDelete: canDelete, Message: ""})
 		return
 	}
-	c.HTML(http.StatusOK, "assemblyList.tmpl", &assemblyListData{HeaderData: assemblyHeader, UserMode: user.Mode, Assemblies: db.AssemblyGetAll()})
+	c.HTML(http.StatusOK, "assemblyList.tmpl", &assemblyListData{HeaderData: assemblyHeader, UserMode: user.Mode, Assemblies: db.AssemblyGetAll(false)})
 }
 
 /*
@@ -109,7 +109,7 @@ AssemblyPOST processes the assembly form.
 */
 func AssemblyPOST(c *gin.Context) {
 	c.Request.ParseMultipartForm(10000000) // Store at most 10 MB in memory before using a temp file.
-	items := CollateItems(c.Request.MultipartForm.Value)
+	items := CollateItems(c.Request.PostForm)
 	submitAction := c.PostForm("submit")
 	if submitAction == "save" {
 		name := c.PostForm("name")
@@ -126,7 +126,7 @@ func AssemblyPOST(c *gin.Context) {
 		if file != nil {
 			image = db.ImageSet(c, file)
 		}
-		err := db.AssemblySet(auth.GetLogin(c), &db.Assembly{ID: web.GetTarget(c), Name: name, Description: description, BracketStyle: bracketStyle, RacewayStyle: racewayStyle, System: system, Device: device, Minutes: minutes, Items: items, Image: image})
+		err := db.AssemblySet(auth.GetLogin(c), db.Assembly{ID: web.GetTarget(c), Name: name, Description: description, BracketStyle: bracketStyle, RacewayStyle: racewayStyle, System: system, Device: device, Minutes: minutes, Items: items, Image: image})
 		if err != nil {
 			message = err.Error()
 			canDelete = false
@@ -199,20 +199,8 @@ func Part(c *gin.Context) {
 		c.HTML(http.StatusOK, "part.tmpl", &partData{partHeader, user.Mode, part, canDelete, ""})
 		return
 	}
-	parts := db.PartGetAll()
+	parts := db.PartGetAll(false)
 	c.HTML(http.StatusOK, "partList.tmpl", &partListData{partHeader, user.Mode, parts})
-
-}
-
-/*
-PartGetName is a utility function for AssemblyList to easily get a part's name from its ID.
-*/
-func PartGetName(id string) (name string) {
-	name = db.PartGet(id).Name
-	if name == "" {
-		return "PART NOT FOUND!"
-	}
-	return
 }
 
 /*
@@ -235,7 +223,7 @@ func PartPOST(c *gin.Context) {
 		if file != nil {
 			image = db.ImageSet(c, file)
 		}
-		err := db.PartSet(auth.GetLogin(c), &db.Part{ID: web.GetTarget(c), Number: number, Manufacturer: manufacturer, Name: name, Description: description, Unit: unit, CostPerUnit: costPerUnit, Image: image})
+		err := db.PartSet(auth.GetLogin(c), db.Part{ID: web.GetTarget(c), Number: number, Manufacturer: manufacturer, Name: name, Description: description, Unit: unit, CostPerUnit: costPerUnit, Image: image})
 		if err != nil {
 			message = err.Error()
 			canDelete = false

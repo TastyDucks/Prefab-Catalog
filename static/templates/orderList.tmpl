@@ -1,0 +1,37 @@
+{{template "header" .HeaderData}}
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+<h1>Order Log</h1>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/datatables.min.js"></script>
+<script src="/js/initiateTable.js"></script>
+<table id="dataTable" class="display compact cell-border">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Number</th>
+            <th>Project #</th>
+            <th>Project Name</th>
+            <th>Address</th>
+            <th>Foreman</th>
+            <th>Purchasing Agent</th>
+            <th>Prefab Director</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{range .Orders}}
+        <tr>
+            <td>{{.Time}}</td>
+            <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
+            <td>{{.Project.Number}}</td>
+            <td>{{.Project.Name}}</td>
+            <td>{{.Project.ShippingAddress}}</td>
+            <td>{{.Project.Foreman.Name}}</td>
+            <td>{{.PurchasingAgent.Name}}</td>
+            <td>{{.PrefabDirector.Name}}</td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
+{{template "footer"}}

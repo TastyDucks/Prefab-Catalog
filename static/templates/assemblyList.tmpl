@@ -1,8 +1,9 @@
 {{template "header" .HeaderData}}
 <div class="topBar">
-    {{template "menuBar" .UserMode}}
+    {{template "menuBarAssembly" .UserMode}}
 </div>
-<h1>Prefab Catalog: Standard Assemblies</h1>
+<form id="submit" action="/order" method="post">
+<h1>Prefab Catalog: Standard Assemblies: Wall-Rough</h1>
 <script src="/js/jquery.min.js"></script>
 <script src="/js/datatables.min.js"></script>
 <script src="/js/initiateTableFilterable.js"></script>
@@ -42,4 +43,5 @@
         {{end}}
     </tbody>
 </table>
+</form>
 {{template "footer"}}

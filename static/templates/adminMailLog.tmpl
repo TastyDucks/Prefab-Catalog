@@ -1,0 +1,7 @@
+{{template "header" .HeaderData}}
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+<h1>Mail Log</h1>
+<pre><p class="code">{{.Log}}</p></pre>
+{{template "footer"}}

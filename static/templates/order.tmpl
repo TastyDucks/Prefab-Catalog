@@ -1,4 +1,171 @@
- 
 {{template "header" .HeaderData}}
-<p>TODO</p>
+<div class="topBar">
+    {{template "menuBar" .UserMode}}
+</div>
+{{if .New}}
+<h1>Review Order</h1>
+<form action="/orderFinish" method="post">
+<h2>Items</h2>
+<table id="bom">
+    <tr>
+        <th>Assemblies</th>
+    </tr>
+    {{range $id, $quantity := .Order.Items}}
+    <tr>
+        <td>{{$quantity}} × {{$id | AssemblyGetName}}</td>
+    </tr>
+    {{end}}
+</table>
+<table id="bom">
+    <tr>
+        <th>BOM</th>
+    </tr>
+    {{range $id, $quantity := .Order.Items | CalculateBOM}}
+    <tr>
+        <td>{{$quantity}} × {{$id | PartGetName}}</td>
+    </tr>
+    {{end}}
+</table>
+<h2>Additional Information</h2>
+<p>Order ID: {{.Order.ID}}</p>
+<p>Order time: {{.Order.Time}}</p>
+<p class="bold">Project number: <input type="text" name="Project.Number" value="{{.Order.Project.Number}}"> <button type="button" name="auto" disabled>Autofill fields...</button></p>
+<p class="bold">Project name: <input type="text" name="Project.Name" value="{{.Order.Project.Name}}"></p>
+<p class="bold">Shipping address: <input type="text" name="Project.ShippingAddress" value="{{.Order.Project.ShippingAddress}}"></p>
+<p class="bold">Delivery location: <input type="text" name="Project.DeliveryLocation" value="{{.Order.Project.DeliveryLocation}}"></p>
+<p>Foreman:
+<ul>
+<li class="bold">Name: <input type="text" name="Foreman.Name" value="{{.Order.Project.Foreman.Name}}"></li>
+<li class="bold">Email: <input type="text" name="Foreman.Contact.Email" value="{{.Order.Project.Foreman.Contact.Email}}"></li>
+<li>Phone: <input type="text" name="Foreman.Contact.Phone" value="{{.Order.Project.Foreman.Contact.Phone}}"></li>
+</ul>
+</p>
+<p>Prefab shop director:
+<ul>
+<li class="bold">Name: <input type="text" name="PrefabDirector.Name" value="{{.Order.PrefabDirector.Name}}"></li>
+<li class="bold">Email: <input type="text" name="PrefabDirector.Contact.Email" value="{{.Order.PrefabDirector.Contact.Email}}"></li>
+<li>Phone: <input type="text" name="PrefabDirector.Contact.Phone" value="{{.Order.PrefabDirector.Contact.Phone}}"></li>
+</ul>
+</p>
+<p>Purchasing agent:
+<ul>
+<li class="bold">Name: <input type="text" name="PurchasingAgent.Name" value="{{.Order.PurchasingAgent.Name}}"></li>
+<li class="bold">Email: <input type="text" name="PurchasingAgent.Contact.Email" value="{{.Order.PurchasingAgent.Contact.Email}}"></li>
+<li>Phone: <input type="text" name="PurchasingAgent.Contact.Phone" value="{{.Order.PurchasingAgent.Contact.Phone}}"></li>
+</ul>
+</p>
+<p>Packaging:
+<ul>
+<li>Delivery time: {{.Order.Time}}</li>
+<li class="bold">Packaging Method: 
+<select name="PackagingMethod">
+    <option value="3' × 3' Pallets"{{if eq .Order.PackagingMethod "3' × 3' Pallets"}} selected{{end}}>3' × 3' Pallets</option>
+    <option value="4' × 4' Pallets"{{if eq .Order.PackagingMethod "4' × 4' Pallets"}} selected{{end}}>4' × 4' Pallets</option>
+    <option value="Band Conduit"{{if eq .Order.PackagingMethod "Band Conduit"}} selected{{end}}>Band Conduit</option>
+    <option value="Bulk Pack"{{if eq .Order.PackagingMethod "Bulk Pack"}} selected{{end}}>Bulk Pack</option>
+    <option value="Current 516 Conduit/Material Cart"{{if eq .Order.PackagingMethod "Current 516 Conduit/Material Cart"}} selected{{end}}>Current 516 Conduit/Material Cart</option>
+    <option value="Furniture Dolly"{{if eq .Order.PackagingMethod "Furniture Dolly"}} selected{{end}}>Furniture Dolly</option>
+    <option value="In Box"{{if eq .Order.PackagingMethod "In Box"}} selected{{end}}>In Gang Box</option>
+    <option value="In Gang Box"{{if eq .Order.PackagingMethod "In Gang Box"}} selected{{end}}>In Gang Box</option>
+    <option value="Multi-Cart"{{if eq .Order.PackagingMethod "Multi-Cart"}} selected{{end}}>Multi-Cart</option>
+    <option value="Pipe Tree"{{if eq .Order.PackagingMethod "Pipe Tree"}} selected{{end}}>Pipe Tree</option>
+    <option value="Plastic Tubs"{{if eq .Order.PackagingMethod "Plastic Tubs"}} selected{{end}}>Plastic Tubs</option>
+    <option value="Shrink Wrapped"{{if eq .Order.PackagingMethod "Shrink Wrapped"}} selected{{end}}>Shrink Wrapped</option>
+    <option value="T-Cart"{{if eq .Order.PackagingMethod "T-Cart"}} selected{{end}}>T-Cart</option>
+    <option value="Tool Cart & Shrink Wrapped"{{if eq .Order.PackagingMethod "Tool Cart & Shrink Wrapped"}} selected{{end}}>Tool Cart & Shrink Wrapped</option>
+    <option value="U-Rack"{{if eq .Order.PackagingMethod "U-Rack"}} selected{{end}}>U-Rack</option>
+    <option value="Wireway Cages"{{if eq .Order.PackagingMethod "Wireway Cages"}} selected{{end}}>Wireway Cages</option>
+</select></li>
+<li>Delivery contact:
+    <ul>
+    <li class="bold">Name: <input type="text" name="DeliveryReceiver.Name" value="{{.Order.DeliveryReceiver.Name}}"></li>
+    <li class="bold">Email: <input type="text" name="DeliveryReceiver.Contact.Email" value="{{.Order.DeliveryReceiver.Contact.Email}}"></li>
+    <li>Phone: <input type="text" name="DeliveryReceiver.Contact.Phone" value="{{.Order.DeliveryReceiver.Contact.Phone}}"></li>
+    </ul>
+</li>
+<li>Labor Task Code: <input type="text" name="LaborTaskCode" value="{{.Order.LaborTaskCode}}"></li>
+</ul>
+</p>
+<p>Notes: <textarea name="Notes">{{.Order.Notes}}</textarea></p>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/prefab-catalog.js"></script>
+<p>Bolded fields are mandatory.</p>
+<button type="submit" name="submit" value="submit">SUBMIT ORDER</button>
+</form>
+{{else}}
+<h1>Order #{{.Order.ID}}</h1>
+<p><a href="?download=true">Download Material Order Form</a></p>
+<h2>Items</h2>
+<table id="bom">
+    <tr>
+        <th>Assemblies</th>
+    </tr>
+    {{range $id, $quantity := .Order.Items}}
+    <tr>
+        <td>{{$quantity}} × {{$id | AssemblyGetName}}</td>
+    </tr>
+    {{end}}
+</table>
+<table id="bom">
+    <tr>
+        <th>BOM</th>
+    </tr>
+    {{range $id, $quantity := .Order.Items | CalculateBOM}}
+    <tr>
+        <td>{{$quantity}} × {{$id | PartGetName}}</td>
+    </tr>
+    {{end}}
+</table>
+<h2>Additional Information</h2>
+<p>Order ID: {{.Order.ID}}</p>
+<p>Order time: {{.Order.Time}}</p>
+<p>Requestor: <span class="code">{{.Order.User}}</span></p>
+<p>Project number: {{.Order.Project.Number}}</p>
+<p>Project name: {{.Order.Project.Name}}</p>
+<p>Shipping address: {{.Order.Project.ShippingAddress}}</p>
+<p>Delivery location: {{.Order.Project.DeliveryLocation}}</p>
+<p>Foreman:
+<ul>
+<li>Name: {{.Order.Project.Foreman.Name}}</li>
+<li>Email: {{.Order.Project.Foreman.Contact.Email}}</li>
+<li>Phone: {{.Order.Project.Foreman.Contact.Phone}}</li>
+</ul>
+</p>
+
+<p>Prefab shop director:
+<ul>
+<li>Name: {{.Order.PrefabDirector.Name}}</li>
+<li>Email: {{.Order.PrefabDirector.Contact.Email}}</li>
+<li>Phone: {{.Order.PrefabDirector.Contact.Phone}}</li>
+</ul>
+</p>
+
+<p>Purchasing agent:
+<ul>
+<li>Name: {{.Order.PurchasingAgent.Name}}</li>
+<li>Email: {{.Order.PurchasingAgent.Contact.Email}}</li>
+<li>Phone: {{.Order.PurchasingAgent.Contact.Phone}}</li>
+</ul>
+</p>
+
+<p>Packaging:
+<ul>
+<li>Delivery time: {{.Order.Time}}</li>
+<li>Packaging Method: {{.Order.PackagingMethod}}</li>
+<li>Delivery contact:
+    <ul>
+    <li>Name: {{.Order.DeliveryReceiver.Name}}</li>
+    <li>Email: {{.Order.DeliveryReceiver.Contact.Email}}</li>
+    <li>Phone: {{.Order.DeliveryReceiver.Contact.Phone}}</li>
+    </ul>
+</li>
+<li>Labor Task Code: {{.Order.LaborTaskCode}}</li>
+</ul>
+</p>
+
+<p>Notes: {{.Order.Notes}}</p>
+
+{{end}}
+
+{{if .Message}}<p class="warning">{{.Message}}</p>{{end}}
 {{template "footer"}}

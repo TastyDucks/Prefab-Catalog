@@ -1,3 +1,6 @@
+/*
+Package web provides functions for setting and getting session values.
+*/
 package web
 
 import (
@@ -33,3 +36,27 @@ func GetTarget(c *gin.Context) string {
 	}
 	return target.(string)
 }
+
+/*
+OrderItemsSet saves the current order items to a cookie.
+*/
+func OrderItemsSet(c *gin.Context, items Items) {
+	session := sessions.Default(c)
+	session.Set("orderitems", items)
+	session.Save()
+}
+
+/*
+OrderItemsGet retrieves saved order items.
+*/
+func OrderItemsGet(c *gin.Context) map[string]int {
+	session := sessions.Default(c)
+	var items interface{}
+	if items = session.Get("orderitems"); items == nil {
+		return nil
+	}
+	return items.(Items)
+}
+
+// Items is a map[string]int, for storing a list of parts or assemblies.
+type Items map[string]int

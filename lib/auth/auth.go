@@ -37,7 +37,7 @@ UserGetMode is a simple function to get the Mode of a User. If user is not logge
 func UserGetMode(c *gin.Context) int {
 	uuid := GetLogin(c)
 	user := db.UserGet(uuid)
-	if user != nil {
+	if user.ID != "" {
 		return user.Mode
 	}
 	return -1

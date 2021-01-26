@@ -1,5 +1,6 @@
-{{define "menuBar"}}
+{{define "menuBarAssembly"}}
 <div class="menuBar">
     <p style="float: left;"><a href="/assembly" class="bold">Assemblies</a> | <a href="/part">Parts</a> | {{if ge . 2}}<a href="/admin">Admin Tools</a> | {{end}}<a href="/profile">View Profile</a> | <a href="/logout">Log Out</a></p>
+    {{if ge . 1}}<p style="float: right"><button type="submit" value="submit" name="submit" form="submit" class="bold" style="text-decoration: underline;">Review Order 🛒</button>{{end}}
 </div>
 {{end}}

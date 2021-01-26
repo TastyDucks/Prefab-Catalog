@@ -1,10 +1,13 @@
-/*Package db provides tools for creating and interacting with the SQLite databases.*/
+/*
+Package db provides tools for creating and interacting with the SQLite databases.
+*/
 package db
 
 import (
 	"Prefab-Catalog/lib/config"
 	"Prefab-Catalog/lib/lumberjack"
 	"Prefab-Catalog/lib/web"
+	"strconv"
 
 	"context"
 	"errors"
@@ -30,18 +33,32 @@ var db *mongo.Database
 var dbContext context.Context
 var collections []string = []string{"assemblies", "audit-logs", "orders", "parts", "users"} // TODO: get from config
 
+// DATABASE CACHES
+
+// Assemblies cache
+var Assemblies []Assembly
+
+// AssembliesAndNames is a list of assembly IDs and their names.
+var AssembliesAndNames map[string]string = make(map[string]string)
+
+// Parts cache
+var Parts []Part
+
+// PartsAndNames is a list of part IDs and their names.
+var PartsAndNames map[string]string = make(map[string]string)
+
 /*
 User describes all the elements of a User.
 */
 type User struct {
-	ID        string `bson:"id"`   // The internal ID.
-	Mode      int    `bson:"mode"` // The user's mode. 0 = Read (read only), 1 = User (read+order), 2 = Admin (read+order+write), 3+ = Sysadmin (previous plus special rendering)
-	Username  string `bson:"username"`
-	Password  string `bson:"password"`
-	FirstName string `bson:"firstname"`
-	LastName  string `bson:"lastname"`
-	Contact   string `bson:"contact"`
-	Image     string `bson:"image"`
+	ID        string  `bson:"id"`   // The internal ID.
+	Mode      int     `bson:"mode"` // The user's mode. 0 = Read (read only), 1 = User (read+order), 2 = Admin (read+order+write), 3+ = Sysadmin (previous plus special rendering)
+	Username  string  `bson:"username"`
+	Password  string  `bson:"password"`
+	FirstName string  `bson:"firstname"`
+	LastName  string  `bson:"lastname"`
+	Contact   Contact `bson:"contact"`
+	Image     string  `bson:"image"`
 }
 
 /*
@@ -89,16 +106,73 @@ type AuditLogAdmin struct {
 AuditLogOrder describes an audit log order entry.
 */
 type AuditLogOrder struct {
-	Time     string         `bson:"time"`
-	User     string         `bson:"user"`
-	Order    string         `bson:"order"`    // The order number. Formatted as 000-000-000
-	Items    map[string]int `bson:"items"`    // The items which were ordered. item:quantity
-	Assignee string         `bson:"assignee"` // The ID of the user assigned with fulfilling the order. TODO.
+	ID               string           `bson:"id"` // The order number.
+	Time             string           `bson:"time"`
+	User             string           `bson:"user"`  // Requesting user.
+	Items            map[string]int   `bson:"items"` // The assemblies which were ordered. item:quantity
+	Project          Project          `bson:"project"`
+	PackagingMethod  string           `bson:"packagingmethod"`
+	PurchasingAgent  PurchasingAgent  `bson:"purchasingagent"`
+	PrefabDirector   PrefabDirector   `bson:"prefabdirector"`
+	DeliveryReceiver DeliveryReceiver `bson:"deliveryreceiver"`
+	LaborTaskCode    string           `bson:"labortaskcode"`
+	Notes            string           `bson:"notes"` // Notes about the request.
+}
+
+// Project is a child of AuditLogOrder.
+type Project struct {
+	Number           string  `bson:"number"`
+	Name             string  `bson:"name"`
+	ShippingAddress  string  `bson:"shippingaddress"`
+	DeliveryLocation string  `bson:"deliverylocaton"` // Where on the project site the materials are to be delivered
+	DeliveryDate     string  `bson:"deliverydate"`
+	Foreman          Foreman `bson:"foreman"`
+}
+
+// Foreman is a child of AuditLogOrder.Project.
+type Foreman struct { // In nearly all cases, the foreman is the user requesting the order -- so this information will be autofilled when a new order request is created.
+	Name    string  `bson:"name"`
+	Contact Contact `bson:"contact"`
+}
+
+// PurchasingAgent is a child of AuditLogOrder.
+type PurchasingAgent struct {
+	Name    string  `bson:"name"`
+	Contact Contact `bson:"contact"`
+}
+
+// PrefabDirector is a child of AuditLogOrder.
+type PrefabDirector struct {
+	Name    string  `bson:"name"`
+	Contact Contact `bson:"contact"`
+}
+
+// DeliveryReceiver is a child of AuditLogOrder.
+type DeliveryReceiver struct {
+	Name    string  `bson:"name"`
+	Contact Contact `bson:"contact"`
+}
+
+// Contact is a struct containing various contact info fields.
+type Contact struct {
+	Email string `bson:"email"`
+	Phone string `bson:"phone"`
+	Other string `bson:"other"`
 }
 
 /*
 MISC DB FUNCTIONS
 */
+
+/*
+Cache loads the Assemblies and Parts databases into memory so they can be served as quickly as possible.
+*/
+func Cache() {
+	Assemblies = AssemblyGetAll(true)
+	AssemblyGetName("cache")
+	Parts = PartGetAll(true)
+	PartGetName("cache")
+}
 
 /*
 TouchBase creates all databases used by the server if they do not exist, along with the default SysAdmin user.
@@ -118,8 +192,8 @@ func TouchBase(dbURI string, dbTimeout int) {
 	}
 	// root violates the laws of causality by creating itself if it does not exist :)
 	user := UserGet("00000000-0000-0000-0000-000000000000")
-	if user == nil {
-		result := UserSet("00000000-0000-0000-0000-000000000000", &User{ID: "00000000-0000-0000-0000-000000000000", Mode: 3, Username: "root", Password: "root", FirstName: "JC", LastName: "Denton", Contact: "admin@pkre.co"})
+	if user.ID == "" {
+		result := UserSet("00000000-0000-0000-0000-000000000000", &User{ID: "00000000-0000-0000-0000-000000000000", Mode: 3, Username: "root", Password: "root", FirstName: "JC", LastName: "Denton", Contact: Contact{Email: "admin@pkre.co"}})
 		if result != nil {
 			log.Fatal(result, "Unable to create default system administrator account.")
 		} else {
@@ -127,6 +201,7 @@ func TouchBase(dbURI string, dbTimeout int) {
 			log.Warn("IMPORTANT: Change the password for this account before making your production server public!!!")
 		}
 	}
+	Cache() // Cache databases
 	return
 }
 
@@ -174,10 +249,10 @@ func UserDelete(callerID string, id string) error {
 UserGet takes a user's ID or Username returns the user's information as a User struct. Returns nil if the user could not be found.
 User.password is the hashed password.
 */
-func UserGet(usernameOrID string) (user *User) {
+func UserGet(usernameOrID string) (user User) {
 	if err := db.Collection("users").FindOne(dbContext, bson.M{"$or": []interface{}{bson.M{"username": usernameOrID}, bson.M{"id": usernameOrID}}}).Decode(&user); err != nil {
 		log.Debugf("Failed to get user data for %q: %s", usernameOrID, err.Error())
-		return nil
+		return User{}
 	}
 	return
 }
@@ -235,7 +310,7 @@ func UserSet(callerID string, user *User) error {
 		return errors.New("username cannot be null")
 	}
 	// If target user currently exists...
-	if existingUser := UserGet(user.ID); existingUser != nil {
+	if existingUser := UserGet(user.ID); existingUser.ID != "" {
 		// Don't overwrite an existing image with null.
 		if user.Image == "" && existingUser.Image != "" {
 			user.Image = existingUser.Image
@@ -292,34 +367,68 @@ func AssemblyDelete(callerID string, ID string) error {
 /*
 AssemblyGet returns the Assembly{} specified by the ID. Returns nil if no such assembly exists.
 */
-func AssemblyGet(ID string) (result *Assembly) {
+func AssemblyGet(ID string) (result Assembly) {
+	for _, assembly := range Assemblies {
+		if ID == assembly.ID {
+			return assembly
+		}
+	}
 	if err := db.Collection("assemblies").FindOne(dbContext, bson.M{"id": ID}).Decode(&result); err != nil {
 		log.Debugf("Failed to get assembly data for %q: %s", ID, err.Error())
-		return &Assembly{}
+		return Assembly{}
 	}
+	Assemblies = append(Assemblies, result)
 	return
 }
 
 /*
 AssemblyGetAll returns all assemblies.
 */
-func AssemblyGetAll() (results []Assembly) {
-	cursor, err := db.Collection("assemblies").Find(dbContext, bson.M{})
-	if err != nil {
-		log.Error(err, "database read error")
-		return nil
+func AssemblyGetAll(fromDB bool) (results []Assembly) {
+	if fromDB {
+		log.Debugf("Loading assemblies from database.")
+		cursor, err := db.Collection("assemblies").Find(dbContext, bson.M{})
+		if err != nil {
+			log.Error(err, "database read error")
+			return nil
+		}
+		if err := cursor.All(dbContext, &results); err != nil {
+			log.Error(err, "database read error")
+			return nil
+		}
+	} else {
+		return Assemblies
 	}
-	if err := cursor.All(dbContext, &results); err != nil {
-		log.Error(err, "database read error")
-		return nil
+	return
+}
+
+/*
+AssemblyGetName is a utility function for Order to easily get an assembly's name from its ID.
+*/
+func AssemblyGetName(id string) (name string) {
+	// Load cache of assemblies and names
+	if id == "cache" {
+		assemblies := AssemblyGetAll(false)
+		for _, assembly := range assemblies {
+			AssembliesAndNames[assembly.ID] = assembly.Name
+		}
+		return
 	}
+	name = AssembliesAndNames[id]
+	if name == "" {
+		name = AssemblyGet(id).Name
+		if name == "" {
+			return "NAME UNKNOWN"
+		}
+	}
+	AssembliesAndNames[id] = name
 	return
 }
 
 /*
 AssemblySet modifies and existing assembly or creates one if it does not exist. Returns nil. Returns error if something goes wrong.
 */
-func AssemblySet(callerID string, assembly *Assembly) error {
+func AssemblySet(callerID string, assembly Assembly) error {
 	if assembly.Name == "" {
 		return errors.New("name cannot be null")
 	}
@@ -337,6 +446,11 @@ func AssemblySet(callerID string, assembly *Assembly) error {
 		return err
 	}
 	log.Debugf("User %s set assembly %s", callerID, assembly.ID)
+	for _, originalAssembly := range Assemblies {
+		if originalAssembly.ID == assembly.ID {
+			originalAssembly = assembly
+		}
+	}
 	AuditLog(&AuditLogAdmin{Time: time.Now().Format("2006-01-02 15:04:05.000000"), User: callerID, Action: "update", Kind: "assembly", Target: assembly.ID})
 	return nil
 }
@@ -358,33 +472,67 @@ func PartDelete(callerID string, ID string) error {
 PartGet returns the Part{} specified by the ID. Returns nil if no such part exists.
 */
 func PartGet(ID string) (result Part) {
+	for _, part := range Parts {
+		if ID == part.ID {
+			return part
+		}
+	}
 	if err := db.Collection("parts").FindOne(dbContext, bson.M{"id": ID}).Decode(&result); err != nil {
 		log.Debugf("Failed to get part data for %q: %s", ID, err.Error())
 		return Part{}
 	}
+	Parts = append(Parts, result)
 	return
 }
 
 /*
 PartGetAll returns all parts.
 */
-func PartGetAll() (results []Part) {
-	cursor, err := db.Collection("parts").Find(dbContext, bson.M{})
-	if err != nil {
-		log.Error(err, "database read error")
-		return nil
+func PartGetAll(fromDB bool) (results []Part) {
+	if fromDB {
+		log.Debugf("Loading parts from database.")
+		cursor, err := db.Collection("parts").Find(dbContext, bson.M{})
+		if err != nil {
+			log.Error(err, "database read error")
+			return nil
+		}
+		if err := cursor.All(dbContext, &results); err != nil {
+			log.Error(err, "database read error")
+			return nil
+		}
+	} else {
+		return Parts
 	}
-	if err := cursor.All(dbContext, &results); err != nil {
-		log.Error(err, "database read error")
-		return nil
+	return
+}
+
+/*
+PartGetName is a utility function for AssemblyList to easily get a part's name from its ID.
+*/
+func PartGetName(id string) (name string) {
+	// Load cache of parts and names
+	if id == "cache" {
+		parts := PartGetAll(false)
+		for _, part := range parts {
+			PartsAndNames[part.ID] = part.Name
+		}
+		return
 	}
+	name = PartsAndNames[id]
+	if name == "" {
+		name = PartGet(id).Name
+		if name == "" {
+			return "NAME UNKNOWN"
+		}
+	}
+	PartsAndNames[id] = name
 	return
 }
 
 /*
 PartSet modifies an existing part or creates one if it does not exist. Returns nil. Returns error if something goes wrong.
 */
-func PartSet(callerID string, part *Part) error {
+func PartSet(callerID string, part Part) error {
 	if part.Name == "" {
 		return errors.New("name cannot be null")
 	}
@@ -401,6 +549,12 @@ func PartSet(callerID string, part *Part) error {
 	if _, err := db.Collection("parts").UpdateOne(dbContext, bson.M{"id": part.ID}, bson.M{"$set": bson.M{"id": part.ID, "number": part.Number, "manufacturer": part.Manufacturer, "name": part.Name, "description": part.Description, "unit": part.Unit, "costperunit": part.CostPerUnit, "image": part.Image}}, &opt); err != nil {
 		return err
 	}
+	PartsAndNames[part.ID] = part.Name // Update caches.
+	for _, originalPart := range Parts {
+		if originalPart.ID == part.ID {
+			originalPart = part
+		}
+	}
 	AuditLog(&AuditLogAdmin{Time: time.Now().Format("2006-01-02 15:04:05.000000"), User: callerID, Action: "update", Kind: "part", Target: part.ID})
 	return nil
 }
@@ -415,11 +569,45 @@ AuditLog is for recording modifications to the databases -- not for general syst
 */
 func AuditLog(auditLog interface{}) error {
 	switch entry := auditLog.(type) {
-	case *AuditLogAdmin:
+	case AuditLogAdmin:
 		if _, err := db.Collection("audit-logs").InsertOne(dbContext, entry); err != nil {
 			return err
 		}
-	case *AuditLogOrder:
+	case AuditLogOrder:
+		// Check for mandatory fields.
+		// TODO: Get "friendly name" via struct tags!
+		if entry.Project.Number == "" {
+			return errors.New("project number required")
+		} else if entry.Project.Name == "" {
+			return errors.New("project name required")
+		} else if entry.Project.ShippingAddress == "" {
+			return errors.New("shipping address required")
+		} else if entry.Project.DeliveryLocation == "" {
+			return errors.New("delivery location required")
+		} else if entry.Project.Foreman.Name == "" {
+			return errors.New("foreman name required")
+		} else if entry.Project.Foreman.Contact.Email == "" {
+			return errors.New("foreman email required")
+		} else if entry.PrefabDirector.Name == "" {
+			return errors.New("prefab director name required")
+		} else if entry.PrefabDirector.Contact.Email == "" {
+			return errors.New("prefab director email required")
+		} else if entry.PurchasingAgent.Name == "" {
+			return errors.New("purchasing agent name required")
+		} else if entry.PurchasingAgent.Contact.Email == "" {
+			return errors.New("purchasing agent email required")
+		} else if entry.DeliveryReceiver.Name == "" {
+			return errors.New("delivery receiver name required")
+		} else if entry.DeliveryReceiver.Contact.Email == "" {
+			return errors.New("delivery receiver email required")
+		} else if entry.PackagingMethod == "" {
+			return errors.New("packaging method required")
+		}
+		// Check important fields.
+		if len(entry.Items) == 0 {
+			log.Warnf("Order %s contains no items, attempting to save anyway.") // TODO: Present a front-end warning requiring confirmation when saving an order with zero items.
+		}
+		// Finish.
 		if _, err := db.Collection("orders").InsertOne(dbContext, entry); err != nil {
 			return err
 		}
@@ -450,17 +638,43 @@ func AuditLogAdminGetAll() (results []AuditLogAdmin) {
 /*
 AuditLogOrderGet returns the AuditLogOrder{} specified by order number. Returns nil if no such order is found.
 */
-func AuditLogOrderGet(ID string) (result *AuditLogOrder) {
-	// TODO
-	return nil
+func AuditLogOrderGet(ID string) (result AuditLogOrder) {
+	if err := db.Collection("orders").FindOne(dbContext, bson.M{"id": ID}).Decode(&result); err != nil {
+		log.Debugf("Failed to get order data for %q: %s", ID, err.Error())
+		return AuditLogOrder{}
+	}
+	return
 }
 
 /*
 AuditLogOrderGetAll returns all orders in the AuditLog.
 */
 func AuditLogOrderGetAll() (results []AuditLogOrder) {
-	// TODO
-	return nil
+	cursor, err := db.Collection("orders").Find(dbContext, bson.M{})
+	if err != nil {
+		log.Error(err, "database read error")
+		return nil
+	}
+	if err := cursor.All(dbContext, &results); err != nil {
+		log.Error(err, "database read error")
+		return nil
+	}
+	return
+}
+
+/*
+AuditLogOrderIncrementID returns the next order ID.
+*/
+func AuditLogOrderIncrementID() (id string) {
+	var order AuditLogOrder
+	opt := &options.FindOneOptions{Sort: bson.M{"id": -1}}
+	db.Collection("orders").FindOne(dbContext, bson.M{}, opt).Decode(&order)
+	log.Debugf("Last order ID was %s, incrementing by one.", order.ID)
+	if order.ID == "" {
+		return "0"
+	}
+	i, _ := strconv.Atoi(order.ID)
+	return strconv.Itoa(i + 1)
 }
 
 /*

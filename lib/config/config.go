@@ -23,7 +23,8 @@ var defaultConfigString string = `DatabaseURI: URI
 DatabaseTimeout: 10
 LogPath: /root/log/
 Port: 80
-Verbosity: 1`
+Verbosity: 1
+URL: http://example.com`
 
 var defaultConfig []byte = []byte(defaultConfigString)
 
@@ -52,13 +53,14 @@ type YAML struct {
 	LogPath         string `yaml:"LogPath"`
 	Port            int    `yaml:"Port"`
 	Verbosity       int    `yaml:"Verbosity"`
+	URL             string `yaml:"URL"` // The URL the prod server is running at.
 }
 
 /*
 Build returns the build as a string.
 */
 func Build() string {
-	return "0.1" // TODO: Update build number each time a push is made to Git.
+	return "0.2 (2021-01-26)  " // TODO: Update build number each time a push is made to Git).
 }
 
 /*
@@ -82,6 +84,10 @@ func Load() YAML {
 	err = errors.New("required setting missing in configuration file")
 	if config.DatabaseURI == "" {
 		log.Fatal(err, "DatabaseURI")
+	}
+	if config.URL == "" {
+		log.Warn("No server URL specified in config -- mail sent will not have a link to the order record.")
+		config.URL = "localhost/"
 	}
 	if config.DatabaseTimeout == 0 {
 		config.DatabaseTimeout = 10

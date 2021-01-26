@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Form</title>
+<link rel="shortcut icon" type="image/x-icon" href="data:image/x-icon;base64, {{.IconData}}">
+<style>
+{{.StyleData}}
+</style>
+</head>
+<body>
+<img src="data:image/png;base64, {{.LogoData}}"></img>
+
+<h1>Material Order Form</h1>
+
+<table>
+<tr><td>Date:</td><td>{{.Order.Time}}</td><td>Requisition #:</td><td>{{.Order.ID}}</td></tr>
+<tr><td>Project #:</td><td>{{.Order.Project.Number}}</td><td>Foreman Name:</td><td>{{.Order.Project.Foreman.Name}}</td></tr>
+<tr><td>Project Name:</td><td>{{.Order.Project.Name}}</td><td>Foreman Phone #:</td><td>{{.Order.Project.Foreman.Contact.Phone}}</td></tr>
+<tr><td>Ship to address:</td><td>{{.Order.Project.ShippingAddress}}</td><td>Work Area Delivery Location:</td><td>{{.Order.Project.DeliveryLocation}}</td></tr>
+<tr><td>Purchasing Agent:</td><td>{{.Order.PurchasingAgent.Name}}</td></tr>
+</table>
+
+<h2>Packaging & Delivery Information</h2>
+
+<div>
+<table>
+<tr><td>Delivery Date:</td><td>{{.Order.Time}}</td><td>Delivery Contact Name:</td><td>{{.Order.DeliveryReceiver.Name}}</td></tr>
+<tr><td>Packaging Method:</td><td>{{.Order.PackagingMethod}}</td><td>Delivery Contact Ph. #:</td><td>{{.Order.DeliveryReceiver.Contact.Phone}}</td></tr>
+<tr><td>Labor Task Code:</td><td>{{.Order.LaborTaskCode}}</td></tr>
+</table>
+</div>
+<h2>Special Packaging Instructions</h2>
+
+<p>{{if .Order.Notes}}{{.Order.Notes}}{{else}}N/A{{end}}</p>
+
+<table class="bom">
+    <tr>
+        <th>Quantity</th>
+        <th>Parts</th>
+    </tr>
+    {{range $id, $quantity := .Order.Items | CalculateBOM}}
+    <tr>
+        <td>{{$quantity}}</td><td>{{$id | PartGetName}}</td>
+    </tr>
+    {{end}}
+</table>
+
+</body>
+</html>

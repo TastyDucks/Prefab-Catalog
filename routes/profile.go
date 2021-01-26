@@ -21,7 +21,7 @@ type profileData struct {
 	Username   string
 	FirstName  string
 	LastName   string
-	Contact    string
+	Contact    db.Contact
 	Mode       int    // This is the Mode of the user who is being viewed.
 	CanDelete  bool   // Whether the currently viewed profile can be deleted. Basically just so the "delete profile" button is disabled in /profile/new/
 	Message    string // Error or success message.
@@ -47,11 +47,11 @@ func Profile(c *gin.Context) {
 			return
 		}
 		if ID == "new" {
-			user = &db.User{ID: db.UUID(), Mode: 1, Image: "/media/none.webp"}
+			user = db.User{ID: db.UUID(), Mode: 1, Image: "/media/none.webp"}
 			canDelete = false
 		} else {
 			user = db.UserGet(ID)
-			if user == nil {
+			if user.ID == "" {
 				NotFound(c)
 				return
 			}
@@ -77,7 +77,7 @@ func ProfilePOST(c *gin.Context) {
 		password := c.PostForm("password")
 		firstname := c.PostForm("firstname")
 		lastname := c.PostForm("lastname")
-		contact := c.PostForm("contact")
+		contact := db.Contact{Email: c.PostForm("contactEmail"), Phone: c.PostForm("contactPhone"), Other: c.PostForm("contactOther")}
 		file, _ := c.FormFile("image")
 		message := ""
 		var image string

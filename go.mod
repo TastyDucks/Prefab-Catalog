@@ -9,6 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-errors/errors v1.1.1 // indirect
 	github.com/google/uuid v1.1.3
+	github.com/matcornic/hermes/v2 v2.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/raja/argon2pw v1.0.1
 	go.mongodb.org/mongo-driver v1.4.4

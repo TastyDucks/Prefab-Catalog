@@ -1,16 +1,17 @@
 a:link, a:visited {
-    color: #0000ff;
+    color: #003da5;
 }
   
 a:hover, a:active {
-    color: #000000;
+    color: #ffa300;
 }
 
 body {
     background-color: #eceff1;
     font-family: sans-serif;
     margin: auto;
-    max-width: 90%
+    max-width: 90%;
+    padding-bottom: 10px;
 }
 
 h1, h2, h3 {
@@ -40,10 +41,8 @@ h1, h2, h3 {
 
 .thumbnailEnlarger span img {
     position: fixed;
-    z-index: 99;
     max-height: 50%;
     max-width: 50%;
-    z-index: 99;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -63,10 +62,15 @@ img {
 }
 
 .code {
-    background-color: #bcbfc0;
+    background-color: #302d2d;
     font-family: monospace;
     font-style: normal;
     text-align: left;
+    color: #ffffff;
+}
+
+.bold {
+    font-weight: bold;
 }
 
 .warning {
@@ -88,25 +92,58 @@ img {
 }
 
 .menuBar {
-    background-color: #aaaaaa;
+    background-color: #003DA5;
     border: 1px solid #000000;
     margin: auto;
     overflow: auto;
     position: sticky;
 }
+.menuBar p a, .menuBar a {
+    color: #ffffff;
+}
+.menuBar a:hover, .menuBar a:active {
+    color: #ffa300;
+}
+.menuBar button {
+    background: none;
+    font-size: 16px;
+    margin: auto;
+    padding: auto;
+    border: none;
+    cursor: pointer;
+    color: #ffffff;
+}
+.menuBar button:hover, .menuBar button:active {
+    color: #ffa300;
+}
+
+#bom {
+    border-collapse: collapse;
+    display: inline-block;
+    vertical-align: top;
+}
+#bom th {
+    text-align: center;
+    background-color: #aaaaaa;
+}
+#bom td, #bom th{
+    border-collapse: collapse;
+    border: 1px solid #000000;
+    text-align: center;
+}
+#bom tr:nth-child(even) {background-color:#f2f2f2;}
+#bom tr:hover {background-color: #dddddd;}
 
 #catalog {
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
 }
-
 #catalog td, #catalog th {
     border: 1px solid #000000;
     padding: 5px;
     text-align: center;
 }
-
 #catalog img {
     border: 1px solid #000000;
     margin: 0px;
@@ -114,11 +151,8 @@ img {
     margin-left: auto;
     margin-right: auto;
 }
-
 #catalog tr:nth-child(even) {background-color:#f2f2f2;}
-
 #catalog tr:hover {background-color: #dddddd;}
-
 #catalog th {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -127,7 +161,6 @@ img {
     margin: 0 100%;
     position: sticky;
 }
-
 #catalog input {
     width: 100%;
     box-sizing: border-box;
@@ -156,9 +189,25 @@ img {
 
  th.dt-center, td.dt-center { text-align: center;}
 
- button, select, input[type=file] {
+button, select, input[type=file] {
     cursor: pointer;
-  }
+    background-color: inherit;
+}
+
+input[type=text], input[type=password] {
+    background-color: #ffffff;
+    border: #a9acac solid 1px;
+}
+
+textarea {
+    background-color: #ffffff;
+    border: #a9acac solid 1px;
+}
+
+select {
+    background-color: inherit;
+    border: #a9acac solid 1px;
+}
 
 .dataTable select {
     display: block;
@@ -181,4 +230,6 @@ textarea {
 
 pre {
     font: inherit;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }

@@ -4,7 +4,9 @@ import (
 	"Prefab-Catalog/lib/config"
 	"Prefab-Catalog/lib/db"
 	"Prefab-Catalog/lib/lumberjack"
+	"Prefab-Catalog/lib/web"
 	"Prefab-Catalog/routes"
+	"encoding/gob"
 	"html/template"
 
 	"fmt"
@@ -23,13 +25,14 @@ import (
 var configuration config.YAML
 var router *gin.Engine
 
+var log *lumberjack.Lumberjack
+
 func main() {
 	configuration = config.Load() // TODO: errors that happen during config.Load() aren't saved to the proper LogPath -- because that might not be loaded yet.
 	lumberjack.Start(configuration.LogPath, configuration.Verbosity)
-	db.TouchBase(configuration.DatabaseURI, configuration.DatabaseTimeout)
-	log := lumberjack.New("Main")
-	build := config.Build()
-	log.Infof("Prefab Catalog started. Version: %s", build)
+	log = lumberjack.New("Main")
+	db.TouchBase(configuration.DatabaseURI, configuration.DatabaseTimeout) // Set up databases and cache things
+	gob.Register(web.Items{})
 	go start(configuration.Port)
 	// Graceful shutdown.
 	quit := make(chan os.Signal, 1)
@@ -39,7 +42,6 @@ func main() {
 }
 
 func start(port int) {
-	log := lumberjack.New("Router")
 	if port <= 0 || port > 65535 {
 		log.Warn("Port specified out of valid range (1-65535), set to 80.")
 		port = 80
@@ -75,8 +77,8 @@ func start(port int) {
 	router.Static("/media", "./static/media")
 	router.Static("/templates", "./static/templates")
 	router.Static("/upload", "./upload")
-	router.SetFuncMap(template.FuncMap{"PartGetName": routes.PartGetName}) // Functions that may be called from within templates. This needs to be run before router.LoadHTMLGlob()
-	router.LoadHTMLGlob("./static/templates/*")                            // Load templates.
+	router.SetFuncMap(template.FuncMap{"AssemblyGetName": db.AssemblyGetName, "PartGetName": db.PartGetName, "CalculateBOM": routes.CalculateBOM}) // Functions that may be called from within templates. This needs to be run before router.LoadHTMLGlob()
+	router.LoadHTMLGlob("./static/templates/*")                                                                                                    // Load templates.
 	// TODO: Dynamically load routes from files in "/routes/" instead of hard-coding them.
 	router.NoRoute(routes.NotFound)                       // 404.
 	router.NoMethod(routes.MethodNotAllowed)              // 405.
@@ -84,6 +86,7 @@ func start(port int) {
 	// Admin
 	router.GET("/admin", routes.Admin)
 	router.GET("/adminAuditLog", routes.AdminAuditLog)
+	router.GET("/adminMailLog", routes.AdminMailLog)
 	router.GET("/adminUserList", routes.AdminUserList)
 	// User
 	router.GET("/profile/*id", routes.Profile)
@@ -91,12 +94,18 @@ func start(port int) {
 	router.GET("/logout", routes.Logout)
 	// Catalog
 	router.GET("/", routes.Index)
+	router.HEAD("/", routes.Index) // For status checks (e.g. via "curl -I URL").
 	router.POST("/", routes.Login)
 	router.GET("/assembly/*id", routes.Assembly)
 	router.POST("/assembly", routes.AssemblyPOST)
 	router.GET("/part/*id", routes.Part)
 	router.POST("/part/", routes.PartPOST)
 	router.GET("/order/*id", routes.Order)
+	router.POST("/order", routes.OrderPOST)             // Order review page
+	router.POST("/orderFinish", routes.OrderFinishPOST) // After order is completed.
+
+	build := config.Build()
+	log.Infof("Prefab Catalog started. Version: %s", build)
 
 	log.Fatal(router.Run(address), "Main thread error!")
 }
