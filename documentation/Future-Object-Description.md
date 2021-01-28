@@ -14,7 +14,7 @@ Parts:
     bd6d8673-22f6-4aa7-891d-9dec51a55698: 2
 BuildTime: 20
 Media:
-    Primary: The basic image for the assembly.
+    Thumbnail: The basic image for the assembly.
     CAD: A 3D model of the assembly.
     FooBar: Any other images that may be relevant.
 

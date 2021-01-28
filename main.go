@@ -103,7 +103,8 @@ func start(port int) {
 	router.GET("/order/*id", routes.Order)
 	router.POST("/order", routes.OrderPOST)             // Order review page
 	router.POST("/orderFinish", routes.OrderFinishPOST) // After order is completed.
-
+	// Statistics
+	router.GET("/stats")
 	build := config.Build()
 	log.Infof("Prefab Catalog started. Version: %s", build)
 

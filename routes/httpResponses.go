@@ -21,16 +21,20 @@ func Unauthorized(c *gin.Context) {
 Forbidden (403).
 */
 func Forbidden(c *gin.Context) {
-	HeaderData := &web.HeaderData{Title: "403: Forbidden", Stylesheets: []string{"error"}}
-	c.HTML(http.StatusForbidden, "403.tmpl", gin.H{"HeaderData": HeaderData})
+	// TODO: Display error page for a configurable period of time before redirect.
+	// HeaderData := &web.HeaderData{Title: "403: Forbidden", Stylesheets: []string{"error"}}
+	// c.HTML(http.StatusForbidden, "403.tmpl", gin.H{"HeaderData": HeaderData})
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
 /*
 NotFound (404).
 */
 func NotFound(c *gin.Context) {
-	HeaderData := &web.HeaderData{Title: "404: Resource not found", Stylesheets: []string{"error"}}
-	c.HTML(http.StatusNotFound, "404.tmpl", gin.H{"HeaderData": HeaderData})
+	// TODO: Display error page for a configurable period of time before redirect.
+	// HeaderData := &web.HeaderData{Title: "404: Resource not found", Stylesheets: []string{"error"}}
+	// c.HTML(http.StatusNotFound, "404.tmpl", gin.H{"HeaderData": HeaderData})
+	c.Redirect(http.StatusSeeOther, "/")
 }
 
 /*

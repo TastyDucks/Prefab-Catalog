@@ -60,7 +60,7 @@ type YAML struct {
 Build returns the build as a string.
 */
 func Build() string {
-	return "0.2 (2021-01-26)  " // TODO: Update build number each time a push is made to Git).
+	return "0.2 (2021-01-26)" // TODO: Update build number each time a push is made to Git).
 }
 
 /*

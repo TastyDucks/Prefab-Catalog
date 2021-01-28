@@ -102,7 +102,7 @@
     </tr>
     {{range $id, $quantity := .Order.Items}}
     <tr>
-        <td>{{$quantity}} × {{$id | AssemblyGetName}}</td>
+        <td>{{$quantity}} × <a href="/assembly/{{$id}}">{{$id | AssemblyGetName}}</a></td>
     </tr>
     {{end}}
 </table>
@@ -112,7 +112,7 @@
     </tr>
     {{range $id, $quantity := .Order.Items | CalculateBOM}}
     <tr>
-        <td>{{$quantity}} × {{$id | PartGetName}}</td>
+        <td>{{$quantity}} × <a href="/part/{{$id}}">{{$id | PartGetName}}</a></td>
     </tr>
     {{end}}
 </table>

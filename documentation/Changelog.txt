@@ -1,0 +1,6 @@
+# Changelog
+
+2021-01-09: Alpha 0.1: UI and SQLite databases completed.
+2021-01-17: Alpha 0.2: Databases migrated to MongoDB, DataTables integration, other minor UI additions.
+2021-01-29: Alpha 1.0: Alpha launch (wall-rough only demonstration).
+2021-??-??: Release 1.0: Production launch. Dynamic assembly system, production mailserver migration, automated database archival, dynamic CDN.

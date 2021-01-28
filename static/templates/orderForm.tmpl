@@ -42,7 +42,7 @@
     </tr>
     {{range $id, $quantity := .Order.Items | CalculateBOM}}
     <tr>
-        <td>{{$quantity}}</td><td>{{$id | PartGetName}}</td>
+        <td>{{$quantity}}</td><td><a href="http://prefab.pkre.co/part/{{$id}}">{{$id | PartGetName}}</a></td>
     </tr>
     {{end}}
 </table>
